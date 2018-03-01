@@ -1,0 +1,21 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@android:color/black</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowBackground">@null</item>
+        <item name="android:windowFullscreen">false</item>
+
+    </style>
+
+
+    <style name="AppTheme.CenterAnimation">
+        <item name="android:windowBackground">@drawable/mad</item>
+    </style>
+
+
+
+</resources>
