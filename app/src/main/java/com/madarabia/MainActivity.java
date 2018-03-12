@@ -1,18 +1,24 @@
 package com.madarabia;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.webkit.DownloadListener;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 
 import am.appwise.components.ni.NoInternetDialog;
@@ -21,7 +27,6 @@ public class MainActivity extends AppCompatActivity
 {
 
     private static final String PAGE_URL = "http://madarabia.com";
-    public ProgressBar mProgress;
     private Context context;
     NoInternetDialog noInternetDialog;
     private WebView mWebView;
@@ -33,84 +38,41 @@ public class MainActivity extends AppCompatActivity
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
 
-        context = MainActivity.this;
-
-        noInternetDialog = new NoInternetDialog.Builder(context).build();
+        noInternetDialog = new NoInternetDialog.Builder(getApplicationContext()).build();
 
         mWebView =  findViewById(R.id.webview);
-        mProgress = findViewById(R.id.progressbar);
 
-        mWebView.clearHistory();
-        mWebView.clearCache(true);
+        // Force links and redirects to open in the WebView instead of in a browser
+        mWebView.setWebChromeClient(new WebChromeClient());
+        mWebView.getSettings().setJavaScriptEnabled(true);
+        mWebView.getSettings().setDomStorageEnabled(true);
 
-
-
-        WebSettings webSettings = mWebView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-
-
-        //improve webview performance
-        mWebView.getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
-        mWebView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
-        mWebView.getSettings().setAppCacheEnabled(true);
-        mWebView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
-        webSettings.setDomStorageEnabled(true);
-        webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NARROW_COLUMNS);
-        webSettings.setUseWideViewPort(true);
-        webSettings.setSavePassword(true);
-        webSettings.setSaveFormData(true);
-        webSettings.setEnableSmoothTransition(true);
-
-        webSettings.setBuiltInZoomControls(false);
-        webSettings.setDisplayZoomControls(false);
-
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            mWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-        }
-        else {
-            mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        }
-
-
-        mWebView.onCheckIsTextEditor();
-
-
-        mWebView.setWebChromeClient(new WebChromeClient() {
-
-            // this will be called on page loading progress
-
-            @Override
-
-            public void onProgressChanged(WebView view, int newProgress) {
-
-                //super.onProgressChanged(view, newProgress);
-
-
-                mProgress.setProgress(newProgress);
-
-                // hide the progress bar if the loading is complete
-
-                if (newProgress == 100) {
-
-  				/* call after laoding splash.html  */
-                    mWebView.loadUrl("javascript:_fully_loaded()");
-                    mWebView.setVisibility(View.VISIBLE);
-                    mProgress.setVisibility(View.GONE);
-
-                }
-
+        mWebView.setWebViewClient(new WebViewClient(){
+            public boolean shouldOverrideUrlLoading(WebView view,String url) {
+                return false;
             }
-
-
-
 
         });
 
-        mWebView.setWebViewClient(new MyCustomWebViewClient());
+        mWebView.getSettings().setSaveFormData(true);
+        mWebView.getSettings().setAllowContentAccess(true);
+        mWebView.getSettings().setAllowFileAccess(true);
+        mWebView.getSettings().setAllowFileAccessFromFileURLs(true);
+        mWebView.getSettings().setAllowUniversalAccessFromFileURLs(true);
+        mWebView.getSettings().setSupportZoom(false);
+        mWebView.setClickable(true);
 
-        /* load splash screen */
-        mWebView.loadUrl(PAGE_URL);
+        // Use remote resource
+        mWebView.postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                mWebView.loadUrl(PAGE_URL);
+            }
+        }, 500);
+
+
+        mWebView.onCheckIsTextEditor();
 
         mWebView.requestFocus(View.FOCUS_DOWN);
         mWebView.setOnTouchListener(new View.OnTouchListener() {
@@ -135,6 +97,9 @@ public class MainActivity extends AppCompatActivity
     }
 
 
+
+
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -143,32 +108,34 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    private class MyCustomWebViewClient extends WebViewClient {
-
-
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url)
-        {
-            view.loadUrl(url);
-            return true;
-
+    // Prevent the back-button from closing the app
+    @Override
+    public void onBackPressed() {
+        if(mWebView.canGoBack()) {
+            mWebView.goBack();
+        } else {
+            super.onBackPressed();
         }
-
-        @Override
-        public void onPageFinished(WebView view, String url) {
+    }
 
 
-            mWebView.loadUrl("javascript:document.getElementById(\"firstname\").focus();");
 
-            //hide loading image
-            findViewById(R.id.imageSplash).setVisibility(View.GONE);
-            mProgress.setVisibility(View.GONE);
-            //show webview
-            mWebView.setVisibility(View.VISIBLE);
+    public class AppJavaScriptProxy{
 
+        private Activity activity = null;
+
+        public AppJavaScriptProxy(Activity activity) {
+            this.activity = activity;
         }
 
 
+        @JavascriptInterface
+        public void showMessage(String message){
+
+            Toast toast = Toast.makeText(this.activity.getApplicationContext(), message, Toast.LENGTH_SHORT);
+
+            toast.show();
+        }
     }
 
 

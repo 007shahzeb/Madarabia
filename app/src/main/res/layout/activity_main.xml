@@ -5,13 +5,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
 
 
-    <ProgressBar
+   <!-- <ProgressBar
         android:id="@+id/progressbar"
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
@@ -25,25 +24,20 @@
         android:layout_centerInParent="true"
         android:indeterminateTintMode="src_atop"
         android:indeterminateTint="@android:color/darker_gray"/>
-
-    <ImageView
+-->
+   <!-- <ImageView
         android:id="@+id/imageSplash"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:src="@drawable/mad"
         android:layout_centerInParent="true"
-        />
-
-    
-
+        />-->
 
     <WebView
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/webview"
         android:configChanges="orientation|screenSize"
         android:layout_width="match_parent"
-        android:visibility="gone"
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:layout_height="match_parent" />
