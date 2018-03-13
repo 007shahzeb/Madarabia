@@ -27,8 +27,7 @@ public class MainActivity extends AppCompatActivity
 {
 
     private static final String PAGE_URL = "http://madarabia.com";
-    private Context context;
-    NoInternetDialog noInternetDialog;
+    private NoInternetDialog noInternetDialog;
     private WebView mWebView;
 
 
@@ -47,12 +46,7 @@ public class MainActivity extends AppCompatActivity
         mWebView.getSettings().setJavaScriptEnabled(true);
         mWebView.getSettings().setDomStorageEnabled(true);
 
-        mWebView.setWebViewClient(new WebViewClient(){
-            public boolean shouldOverrideUrlLoading(WebView view,String url) {
-                return false;
-            }
-
-        });
+        mWebView.setWebViewClient(new WebViewClient());
 
         mWebView.getSettings().setSaveFormData(true);
         mWebView.getSettings().setAllowContentAccess(true);
@@ -118,25 +112,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
-
-    public class AppJavaScriptProxy{
-
-        private Activity activity = null;
-
-        public AppJavaScriptProxy(Activity activity) {
-            this.activity = activity;
-        }
-
-
-        @JavascriptInterface
-        public void showMessage(String message){
-
-            Toast toast = Toast.makeText(this.activity.getApplicationContext(), message, Toast.LENGTH_SHORT);
-
-            toast.show();
-        }
-    }
 
 
     @Override
