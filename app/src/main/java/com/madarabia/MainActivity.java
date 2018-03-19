@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Build;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,12 +22,16 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 
+import net.hockeyapp.android.CrashManager;
+import net.hockeyapp.android.UpdateManager;
+
 import am.appwise.components.ni.NoInternetDialog;
 
 public class MainActivity extends AppCompatActivity
 {
 
     private static final String PAGE_URL = "http://madarabia.com";
+    private static final String TAG = "WebView-------------";
     private NoInternetDialog noInternetDialog;
     private WebView mWebView;
 
@@ -41,14 +46,14 @@ public class MainActivity extends AppCompatActivity
 
         mWebView =  findViewById(R.id.webview);
 
+        checkForUpdates();
+
         // Force links and redirects to open in the WebView instead of in a browser
+        WebSettings webSettings = mWebView.getSettings();
         mWebView.setWebChromeClient(new WebChromeClient());
         mWebView.getSettings().setJavaScriptEnabled(true);
-        mWebView.getSettings().setDomStorageEnabled(true);
 
-        mWebView.setWebViewClient(new WebViewClient());
 
-        mWebView.getSettings().setSaveFormData(true);
         mWebView.getSettings().setAllowContentAccess(true);
         mWebView.getSettings().setAllowFileAccess(true);
         mWebView.getSettings().setAllowFileAccessFromFileURLs(true);
@@ -56,14 +61,34 @@ public class MainActivity extends AppCompatActivity
         mWebView.getSettings().setSupportZoom(false);
         mWebView.setClickable(true);
 
-        // Use remote resource
-        mWebView.postDelayed(new Runnable() {
 
-            @Override
-            public void run() {
-                mWebView.loadUrl(PAGE_URL);
-            }
-        }, 500);
+
+        //Improve web performance
+        mWebView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+        mWebView.getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
+        mWebView.getSettings().setAppCacheEnabled(true);
+        mWebView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
+        webSettings.setDomStorageEnabled(true);
+        webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NARROW_COLUMNS);
+        webSettings.setUseWideViewPort(true);
+        webSettings.setSaveFormData(true);
+        webSettings.setSavePassword(true);
+        webSettings.setEnableSmoothTransition(true);
+
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            // chromium, enable hardware acceleration
+            mWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        } else {
+            // older android version, disable hardware acceleration
+            mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
+
+
+        //End of web performance
+
+
 
 
         mWebView.onCheckIsTextEditor();
@@ -88,9 +113,78 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+
+        mWebView.setWebViewClient(new WebViewClient());
+
+
+   /*     mWebView.setWebViewClient(new WebViewClient() {
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                Log.i(TAG, "Loading");
+                view.loadUrl(url);
+                return true;
+            }
+
+            public void onPageFinished(WebView view, String url) {
+                Log.i(TAG, "Done loading " + url);
+                if (progressBar.isShowing()) {
+                    progressBar.dismiss();
+                }
+            }
+
+            public void onReceivedError(WebView view, int errorCode,
+                                        String description, String failingUrl) {
+                Log.e(TAG, "Error: " + description);
+                Toast.makeText(getApplicationContext(),
+                        "Oh no! " + description, Toast.LENGTH_SHORT).show();
+                alertDialog.setTitle("Error");
+                alertDialog.setMessage(description);
+                alertDialog.setCancelable(false);
+                alertDialog.show();
+
+            }
+        });*/
+
+        // main loading website url
+        mWebView.postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                mWebView.loadUrl(PAGE_URL);
+            }
+        }, 500);
+
+
+
     }
 
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        // ... your own onResume implementation
+        checkForCrashes();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        unregisterManagers();
+    }
+
+
+
+    private void checkForCrashes() {
+        CrashManager.register(this);
+    }
+
+    private void checkForUpdates() {
+        // Remove this for store builds!
+        UpdateManager.register(this);
+    }
+
+    private void unregisterManagers() {
+        UpdateManager.unregister();
+    }
 
 
 
@@ -99,6 +193,7 @@ public class MainActivity extends AppCompatActivity
         super.onDestroy();
 
         noInternetDialog.onDestroy();
+        unregisterManagers();
 
     }
 

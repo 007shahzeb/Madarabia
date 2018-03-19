@@ -6,9 +6,11 @@ android {
         applicationId "com.release.madarabia"
         minSdkVersion 17
         targetSdkVersion 26
-        versionCode 3
-        versionName "3.0"
+        versionCode 4
+        versionName "4.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders = [HOCKEYAPP_APP_ID: "e3409a361d544fdd9e6022da7e3729d9"]
+
     }
     buildTypes {
         release {
@@ -34,5 +36,6 @@ dependencies {
 
     compile 'com.github.delight-im:Android-AdvancedWebView:v3.0.0'
 
+    compile 'net.hockeyapp.android:HockeySDK:5.1.0'
 
 }
