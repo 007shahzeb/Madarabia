@@ -1,25 +1,20 @@
 package com.madarabia;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.webkit.DownloadListener;
-import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 
 import net.hockeyapp.android.CrashManager;
@@ -27,13 +22,19 @@ import net.hockeyapp.android.UpdateManager;
 
 import am.appwise.components.ni.NoInternetDialog;
 
-public class MainActivity extends AppCompatActivity
-{
+public class MainActivity extends AppCompatActivity {
 
     private static final String PAGE_URL = "http://madarabia.com";
     private static final String TAG = "WebView-------------";
+
     private NoInternetDialog noInternetDialog;
+
     private WebView mWebView;
+
+//    private ProgressDialog mProgressDialog;
+
+    ProgressBar progressBar;
+    ImageView imageView;
 
 
     @Override
@@ -42,9 +43,23 @@ public class MainActivity extends AppCompatActivity
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
 
+
+        progressBar = findViewById(R.id.progressBar);
+        imageView = findViewById(R.id.splash_image);
+
+
         noInternetDialog = new NoInternetDialog.Builder(getApplicationContext()).build();
 
-        mWebView =  findViewById(R.id.webview);
+        // MARK: shahzeb added the progressbar only and finished it before load URL
+//        mProgressDialog = new ProgressDialog(this, R.style.AppTheme_Dark_Dialog);
+
+//        mProgressDialog.setMessage("Loading please wait...");
+//        mProgressDialog.setCancelable(false);
+//        mProgressDialog.setIndeterminate(true);
+//        mProgressDialog.show();
+
+
+        mWebView = findViewById(R.id.webview);
 
         checkForUpdates();
 
@@ -62,7 +77,6 @@ public class MainActivity extends AppCompatActivity
         mWebView.setClickable(true);
 
 
-
         //Improve web performance
         mWebView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
         mWebView.getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
@@ -74,7 +88,6 @@ public class MainActivity extends AppCompatActivity
         webSettings.setSaveFormData(true);
         webSettings.setSavePassword(true);
         webSettings.setEnableSmoothTransition(true);
-
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -89,8 +102,6 @@ public class MainActivity extends AppCompatActivity
         //End of web performance
 
 
-
-
         mWebView.onCheckIsTextEditor();
 
         mWebView.requestFocus(View.FOCUS_DOWN);
@@ -98,13 +109,11 @@ public class MainActivity extends AppCompatActivity
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
-                switch (event.getAction())
-                {
+                switch (event.getAction()) {
 
                     case MotionEvent.ACTION_DOWN:
                     case MotionEvent.ACTION_UP:
-                        if (!v.hasFocus())
-                        {
+                        if (!v.hasFocus()) {
                             v.requestFocus();
                         }
                         break;
@@ -114,45 +123,53 @@ public class MainActivity extends AppCompatActivity
         });
 
 
-        mWebView.setWebViewClient(new WebViewClient());
+        mWebView.setWebViewClient(new AppWebViewClients());
+        mWebView.loadUrl(PAGE_URL);
 
 
-   /*     mWebView.setWebViewClient(new WebViewClient() {
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                Log.i(TAG, "Loading");
-                view.loadUrl(url);
-                return true;
-            }
+//        progressBar.setVisibility(View.GONE);
+//        imageView.setVisibility(View.GONE);
 
-            public void onPageFinished(WebView view, String url) {
-                Log.i(TAG, "Done loading " + url);
-                if (progressBar.isShowing()) {
-                    progressBar.dismiss();
-                }
-            }
-
-            public void onReceivedError(WebView view, int errorCode,
-                                        String description, String failingUrl) {
-                Log.e(TAG, "Error: " + description);
-                Toast.makeText(getApplicationContext(),
-                        "Oh no! " + description, Toast.LENGTH_SHORT).show();
-                alertDialog.setTitle("Error");
-                alertDialog.setMessage(description);
-                alertDialog.setCancelable(false);
-                alertDialog.show();
-
-            }
-        });*/
+//
+//        mWebView.setWebViewClient(new WebViewClient() {
+//            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+//                Log.i(TAG, "Loading");
+//                view.loadUrl(url);
+//                return true;
+//            }
+//
+//            public void onPageFinished(WebView view, String url) {
+//                Log.i(TAG, "Done loading " + url);
+//                if (progressBar.isShowing()) {
+//                    progressBar.dismiss();
+//                }
+//            }
+//
+//            public void onReceivedError(WebView view, int errorCode,
+//                                        String description, String failingUrl) {
+//                Log.e(TAG, "Error: " + description);
+//                Toast.makeText(getApplicationContext(),
+//                        "Oh no! " + description, Toast.LENGTH_SHORT).show();
+//                alertDialog.setTitle("Error");
+//                alertDialog.setMessage(description);
+//                alertDialog.setCancelable(false);
+//                alertDialog.show();
+//
+//            }
+//        });
 
         // main loading website url
-        mWebView.postDelayed(new Runnable() {
 
-            @Override
-            public void run() {
-                mWebView.loadUrl(PAGE_URL);
-            }
-        }, 500);
 
+//        mWebView.postDelayed(new Runnable() {
+//
+//            @Override
+//            public void run() {
+//
+//                mProgressDialog.dismiss();
+//                mWebView.loadUrl(PAGE_URL);
+//            }
+//        }, 500);
 
 
     }
@@ -172,7 +189,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-
     private void checkForCrashes() {
         CrashManager.register(this);
     }
@@ -187,7 +203,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -200,13 +215,12 @@ public class MainActivity extends AppCompatActivity
     // Prevent the back-button from closing the app
     @Override
     public void onBackPressed() {
-        if(mWebView.canGoBack()) {
+        if (mWebView.canGoBack()) {
             mWebView.goBack();
         } else {
             super.onBackPressed();
         }
     }
-
 
 
     @Override
@@ -226,7 +240,30 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    public class AppWebViewClients extends WebViewClient {
 
+        public AppWebViewClients() {
+//            mProgressDialog.show();
+        }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            view.loadUrl(url);
+            return true;
+        }
+
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+
+            mWebView.setVisibility(View.VISIBLE);
+            imageView.setVisibility(View.GONE);
+            progressBar.setVisibility(View.GONE);
+
+
+//            mProgressDialog.dismiss();
+        }
+    }
 
 
 }
